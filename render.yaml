@@ -1,11 +1,16 @@
 services:
-  - name: amusurvey-db # Name of the database service
-    type: psql # Corrected type for a PostgreSQL database
+  - name: amusurvey-db
+    type: database # This is correct for defining a database resource
     databaseName: amusurvey_db_prod
     user: amusurvey_user
-    plan: free
-  - name: amu-survey-web # Name of the web service
-    type: web # Corrected type for a web service
+    plan: free # Ensure this plan is available and valid
+    # You might need to specify the database engine, e.g., engine: pg or engine: postgres
+    # Based on Render's docs, for type: database, the 'engine' key is often required or assumed.
+    # Let's add it to be explicit.
+    engine: postgres # Explicitly defining the database engine
+
+  - name: amu-survey-web
+    type: web
     env: python
     buildCommand: "./build.sh"
     startCommand: "gunicorn amusurvey.wsgi:application --log-file -"
@@ -27,8 +32,9 @@ services:
     numInstances: 1
     plan: starter
     healthCheckPath: /health
-  - name: migrate-amu-survey-db # Name of the job service
-    type: job # Corrected type for a job service
+
+  - name: migrate-amu-survey-db
+    type: job
     env: python
     buildCommand: "./build.sh"
     startCommand: "python manage.py migrate"
