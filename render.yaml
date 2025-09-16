@@ -1,46 +1,45 @@
-# Top-level list of resources
-- type: database # This is how you define a database resource
-  name: amusurvey-db
-  databaseName: amusurvey_db_prod
-  user: amusurvey_user
-  plan: free
-
-- type: web # This is how you define a web service resource
-  name: amu-survey-web
-  env: python
-  buildCommand: "./build.sh"
-  startCommand: "gunicorn amusurvey.wsgi:application --log-file -"
-  envVars:
-    - key: DATABASE_URL
-      fromDatabase:
-        name: amusurvey-db
-        property: connectionString
-    - key: SECRET_KEY
-      generateValue: true
-    - key: WEB_CONCURRENCY
-      value: 4
-    - key: DJANGO_SETTINGS_MODULE
-      value: amusurvey.settings
-    - key: DEBUG
-      value: "False"
-    - key: ALLOWED_HOSTS
-      value: "amu-survey-web.onrender.com"
-  numInstances: 1
-  plan: starter
-  healthCheckPath: /health
-
-- type: job # This is how you define a job resource
-  name: migrate-amu-survey-db
-  env: python
-  buildCommand: "./build.sh"
-  startCommand: "python manage.py migrate"
-  envVars:
-    - key: DATABASE_URL
-      fromDatabase:
-        name: amusurvey-db
-        property: connectionString
-    - key: SECRET_KEY
-      generateValue: true
-    - key: DEBUG
-      value: "False"
-  autoDeploy: true
+# Top-level list of resources (This comment is fine, but the structure below needs to change)
+services: # This is the missing top-level key
+  - type: database # This is how you define a database resource
+    name: amusurvey-db
+    databaseName: amusurvey_db_prod
+    user: amusurvey_user
+    plan: free
+  - type: web # This is how you define a web service resource
+    name: amu-survey-web
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn amusurvey.wsgi:application --log-file -"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amusurvey-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+      - key: DJANGO_SETTINGS_MODULE
+        value: amusurvey.settings
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "amu-survey-web.onrender.com"
+    numInstances: 1
+    plan: starter
+    healthCheckPath: /health
+  - type: job # This is how you define a job resource
+    name: migrate-amu-survey-db
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "python manage.py migrate"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amusurvey-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+    autoDeploy: true
