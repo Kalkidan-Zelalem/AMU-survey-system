@@ -1,54 +1,46 @@
-# render.yaml
+# Top-level list of resources
+- type: database # This is how you define a database resource
+  name: amusurvey-db
+  databaseName: amusurvey_db_prod
+  user: amusurvey_user
+  plan: free
 
-# 1. Define your managed PostgreSQL database
-databases:
-  - name: amusurvey-db # A unique name for Render's internal reference
-    databaseName: amusurvey_db_prod # The actual database name created within PostgreSQL
-    user: amusurvey_user # The username for connecting to the database
-    plan: free # or 'starter', 'standard', etc. Choose your plan.
+- type: web # This is how you define a web service resource
+  name: amu-survey-web
+  env: python
+  buildCommand: "./build.sh"
+  startCommand: "gunicorn amusurvey.wsgi:application --log-file -"
+  envVars:
+    - key: DATABASE_URL
+      fromDatabase:
+        name: amusurvey-db
+        property: connectionString
+    - key: SECRET_KEY
+      generateValue: true
+    - key: WEB_CONCURRENCY
+      value: 4
+    - key: DJANGO_SETTINGS_MODULE
+      value: amusurvey.settings
+    - key: DEBUG
+      value: "False"
+    - key: ALLOWED_HOSTS
+      value: "amu-survey-web.onrender.com"
+  numInstances: 1
+  plan: starter
+  healthCheckPath: /health
 
-# 2. Define your Django web service
-services:
-  - type: web # This tells Render it's a web application
-    name: amu-survey-web # Choose a unique name for your web service (e.g., lowercase, hyphens)
-    env: python # Specify the Python runtime
-    buildCommand: "./build.sh" # Assumes you have a build.sh for installing dependencies
-    startCommand: "gunicorn amusurvey.wsgi:application --log-file -" # Use your actual project name for wsgi
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase: # This automatically injects the connection string to your managed DB
-          name: amusurvey-db # References the 'name' of your database defined above
-          property: connectionString
-      - key: SECRET_KEY # Crucial for Django security; Render generates a strong one
-        generateValue: true
-      - key: WEB_CONCURRENCY # Recommended for Gunicorn
-        value: 4 # Adjust based on your Render plan (e.g., 2 for Free, 4 for Starter)
-      - key: DJANGO_SETTINGS_MODULE # Tells Django where to find your settings
-        value: amusurvey.settings # Make sure this points to your project's settings file
-      - key: DEBUG # Set to False for production environments
-        value: "False"
-      - key: ALLOWED_HOSTS # Very important for Django in production. Replace with your Render service URL.
-        value: "amu-survey-web.onrender.com" # You'll find this URL on Render dashboard after first deploy
-    numInstances: 1 # Number of web service instances
-    plan: starter # Or 'free' for testing/small projects
-    healthCheckPath: /health # Optional: Add a health check URL in your Django app
-
-# 3. Define a migration job (Highly Recommended for Django)
-# IMPORTANT: This 'job' needs to be at the same top-level indentation as 'databases' and 'services'
-jobs: # Changed from 'services' to 'jobs' at this level
-  - type: job # This runs once on each deployment to apply migrations
-    name: migrate-amu-survey-db # A unique name for your migration job
-    env: python
-    buildCommand: "./build.sh" # Reuse your build script
-    startCommand: "python manage.py migrate" # The command to run migrations
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: amusurvey-db # References the same database
-          property: connectionString
-      - key: SECRET_KEY # Still needed for manage.py commands
-        generateValue: true
-      - key: DEBUG # Set to False for production
-        value: "False"
-    autoDeploy: true # Render will automatically run this job on every new deployment
-    # Note: Jobs run and then terminate. They don't stay running like web services.
+- type: job # This is how you define a job resource
+  name: migrate-amu-survey-db
+  env: python
+  buildCommand: "./build.sh"
+  startCommand: "python manage.py migrate"
+  envVars:
+    - key: DATABASE_URL
+      fromDatabase:
+        name: amusurvey-db
+        property: connectionString
+    - key: SECRET_KEY
+      generateValue: true
+    - key: DEBUG
+      value: "False"
+  autoDeploy: true
