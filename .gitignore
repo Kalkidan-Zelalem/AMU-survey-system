@@ -1,15 +1,35 @@
-# Python
+ 
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
-*.log
-*.sqlite3
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
 
-# Virtual environment
-venv/
+# Environments
 .env
+venv/
+env/
+# For Windows:
+*/Scripts/activate
+# For Linux/macOS:
+*/bin/activate
 
-# Static files
-staticfiles/
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store # macOS specific
+Thumbs.db # Windows specific
 
-# Media files (if you have them)
-media/
+# Django stuff
+*.log
+local_settings.py # If you use a separate local settings file not meant for production
+media/ # User-uploaded media files - typically managed by your deployment strategy, not version control
+db.sqlite3 # Your SQLite database file - do NOT commit this
+
+# My custom project specific things
+# Add any other files or directories here that are generated locally
+# and should not be committed to Git.

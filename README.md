@@ -1,3 +1,4 @@
+
 # AMU Survey System
 
 This is a Django-based web application designed to facilitate survey creation, distribution, and data collection within the AMU community.
@@ -82,3 +83,6 @@ This project is open source and available under the [MIT License](LICENSE.md).
 ## Contact
 
 For questions or issues, please contact [Your Name/Email].
+
+# AMU-survey-system
+
