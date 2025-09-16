@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.log
+*.sqlite3
+
+# Virtual environment
+venv/
+.env
+
+# Static files
+staticfiles/
+
+# Media files (if you have them)
+media/

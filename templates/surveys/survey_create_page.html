@@ -1,0 +1,122 @@
+{% extends "base.html" %} <!-- Or your project's base template -->
+{% load crispy_forms_tags %} <!-- If you use crispy forms, otherwise remove -->
+
+{% block content %}
+<style>
+    .question-form-container {
+        border: 1px solid #dee2e6;
+        border-radius: .375rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        background-color: #f8f9fa;
+    }
+    .choices-field { display: none; }
+</style>
+
+<div class="container mt-4">
+    <h2>{{ page_title }}</h2>
+    <p>Create your survey and add all its questions on this single page.</p>
+    <hr>
+
+    <form method="post" id="survey-form">
+        {% csrf_token %}
+
+        <!-- 1. Main Survey form -->
+        <div class="card mb-4">
+            <div class="card-header"><h4>Survey Details</h4></div>
+            <div class="card-body">
+                {{ survey_form|crispy }} <!-- Or {{ survey_form.as_p }} if not using crispy -->
+            </div>
+        </div>
+
+        <h4>Questions</h4>
+
+        <!-- 2. Formset Management Form -->
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+            <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+        {% endif %}
+
+        <!-- 3. Container for all question forms -->
+        <div id="question-forms-container">
+            {% for form in formset %}
+            <div class="question-form-container">
+                {{ form.id }}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-8">
+                        {{ form.text|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.question_type|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="mt-3 choices-field">
+                    {{ form.choices_text|as_crispy_field }}
+                </div>
+                {% if formset.can_delete %}
+                <div class="mt-2 text-end">
+                    <label for="{{ form.DELETE.id_for_label }}" class="btn btn-sm btn-outline-danger">
+                        {{ form.DELETE }} Delete This Question
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Hidden template for new forms -->
+        <div id="empty-form-template" style="display:none;">
+            <div class="question-form-container">
+                {{ formset.empty_form|crispy }}
+            </div>
+        </div>
+
+        <button type="button" id="add-form-btn" class="btn btn-secondary mt-2">Add Another Question</button>
+        <hr>
+        <button type="submit" class="btn btn-primary btn-lg">Save Survey and Questions</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formContainer = document.querySelector('#question-forms-container');
+    const addButton = document.querySelector('#add-form-btn');
+    const emptyFormTemplate = document.querySelector('#empty-form-template').innerHTML;
+    const totalFormsInput = document.querySelector('#id_questions-TOTAL_FORMS');
+
+    addButton.addEventListener('click', function() {
+        let formNum = parseInt(totalFormsInput.value);
+        let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, formNum);
+        formContainer.insertAdjacentHTML('beforeend', newFormHtml);
+        totalFormsInput.value = formNum + 1;
+    });
+
+    function toggleChoicesField(selectElement) {
+        const questionForm = selectElement.closest('.question-form-container');
+        const choicesField = questionForm.querySelector('.choices-field');
+        if (!choicesField) return; // Exit if the field isn't found
+        
+        // Use the actual values from your Question model's TextChoices
+        if (selectElement.value === 'CHOICE' || selectElement.value === 'MULTICHOICE') {
+            choicesField.style.display = 'block';
+        } else {
+            choicesField.style.display = 'none';
+        }
+    }
+
+    document.body.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('question-type-select')) {
+            toggleChoicesField(e.target);
+        }
+    });
+
+    document.querySelectorAll('.question-type-select').forEach(select => {
+        toggleChoicesField(select);
+    });
+});
+</script>
+{% endblock %}

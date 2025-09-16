@@ -1,0 +1,69 @@
+<!-- templates/surveys/survey_detail.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Manage: {{ object.title }}</h1>
+    <!-- THIS LINK IS NOW CORRECTED -->
+    <a href="{% url 'surveys:survey-list' %}" class="btn btn-secondary">« Back to Dashboard</a>
+  </div>
+  <p class="lead">{{ object.description }}</p>
+  <p>
+    <strong>Audience:</strong> {{ object.get_target_audience_display }} |
+    <strong>Status:</strong> {% if object.is_active %}Active{% else %}Inactive{% endif %}
+  </p>
+  <p>
+    <strong>Available from:</strong> {{ object.start_date|default:"(Not set)" }} |
+    <strong>Available until:</strong> {{ object.end_date|default:"(Not set)" }}
+  </p>
+  
+  <div class="card my-4">
+    <div class="card-header"><h4>Shareable Link</h4></div>
+    <div class="card-body">
+        {% if object.is_public %}
+            <p>This survey is public. You can share the link below with respondents.</p>
+            <div class="input-group">
+                <!-- THIS LINK IS NOW CORRECTED -->
+                <input type="text" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{% url 'surveys:survey-public-take' public_id=object.public_id %}" id="shareableLink" readonly>
+                <button class="btn btn-outline-secondary" type="button" onclick="copyLink()">Copy Link</button>
+            </div>
+            <small id="copySuccess" class="text-success mt-2" style="display: none;">Link copied to clipboard!</small>
+        {% else %}
+            <p>This survey is currently private. To get a shareable link, please edit the survey settings.</p>
+        {% endif %}
+    </div>
+  </div>
+  <hr>
+
+  <h3>Management Actions</h3>
+  <!-- THESE LINKS ARE NOW CORRECTED (with explicit pk) -->
+  <a href="{% url 'surveys:survey-update' pk=object.pk %}" class="btn btn-primary">Edit Survey Settings</a>
+  <a href="{% url 'surveys:survey-results' pk=object.pk %}" class="btn btn-info">View Results</a>
+  <a href="{% url 'surveys:survey-delete' pk=object.pk %}" class="btn btn-danger">Delete Entire Survey</a>
+
+  <h4 class="mt-4">Existing Questions:</h4>
+  <div class="list-group">
+    {% for question in object.questions.all %}
+      <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>{{ question.order }}. {{ question.text }} <small class="text-muted">({{ question.get_question_type_display }})</small></span>
+        <!-- THIS LINK IS NOW CORRECTED (with explicit pk) -->
+        <a href="{% url 'surveys:question-edit' pk=question.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+      </div>
+    {% empty %}
+      <p class="mt-2">This survey has no questions yet.</p>
+    {% endfor %}
+  </div>
+
+<script>
+function copyLink() {
+  var copyText = document.getElementById("shareableLink");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(copyText.value);
+  
+  var successMessage = document.getElementById("copySuccess");
+  successMessage.style.display = "block";
+  setTimeout(function(){ successMessage.style.display = "none"; }, 2000);
+}
+</script>
+{% endblock %}

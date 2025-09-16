@@ -1,0 +1,68 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_styles %}
+  {% if not user.is_authenticated %}
+    <style>
+      /* These styles will ONLY be applied IF the user is NOT logged in. */
+      /* They override the default styles from base.html. */
+      body {
+          background-image: url("{% static 'images/amu.jpg' %}");
+          background-size: cover;
+          background-position: center;
+          background-attachment: fixed;
+      }
+      /* Make the boxes transparent ONLY on the public home page */
+      .content-box {
+          background-color: rgba(255, 255, 255, 0.85) !important; /* !important helps ensure this rule wins */
+      }
+    </style>
+  {% endif %}
+{% endblock extra_styles %}
+
+
+{% block content %}
+
+  {# THIS SECTION IS FOR GUESTS (NOT LOGGED IN) #}
+  {% if not user.is_authenticated %}
+    <div class="text-center p-md-5">
+      <h1 class="display-4">Welcome to the AMU Survey System</h1>
+      <p class="lead" style="color: #333;">Your feedback matters. Participate in surveys to help improve our community.</p>
+      <hr class="my-4">
+      <div class="mt-4">
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Login to Your Account</a>
+        <span class="mx-3">or</span>
+        <a href="{% url 'register' %}" class="btn btn-success btn-lg">Register a New Account</a>
+      </div>
+    </div>
+  {% endif %}
+
+
+  {# THIS SECTION IS FOR USERS WHO ARE LOGGED IN #}
+  {% if user.is_authenticated %}
+    <h1 class="display-5">Dashboard</h1>
+    
+    <!-- === THIS IS THE MAIN FIX FOR THE ROLE DISPLAY === -->
+    <!-- We must go through user.profile to get the role -->
+    <p class="lead">Hello, {{ user.username }}! You are logged in as a <strong>{{ user.profile.get_user_type_display|default:"(Role not set)" }}</strong>.</p>
+    
+    <hr>
+
+    <!-- === THIS IS THE FIX FOR THE ROLE-SPECIFIC CONTENT === -->
+    <!-- We must check user.profile.user_type -->
+    {% if user.profile.user_type == 'STUDENT' %}
+      <h2>Available Surveys for You</h2>
+      <p>Click the "Survey Dashboard" button in the navigation bar to see surveys available for you to take.</p>
+
+    {% elif user.profile.user_type == 'SURVEY_CREATOR' %}
+      <h2>Survey Management</h2>
+      <p>Click the "Survey Dashboard" button in the navigation bar to create and manage your surveys.</p>
+
+    {% else %}
+      <h2>Welcome</h2>
+      <p>Click the "Survey Dashboard" button in the navigation bar to view available surveys.</p>
+    {% endif %}
+  {% endif %}
+
+{% endblock content %}

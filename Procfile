@@ -1,0 +1,1 @@
+web: gunicorn amusurvey.wsgi:application --log-file -

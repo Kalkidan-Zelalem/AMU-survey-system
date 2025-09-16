@@ -1,0 +1,21 @@
+<!-- templates/surveys/survey_confirm_delete.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Delete Survey</legend>
+                <h2>Are you sure you want to delete the survey "{{ object.title }}"?</h2>
+                <p class="alert alert-danger">This action cannot be undone. All questions and responses associated with this survey will be permanently deleted.</p>
+            </fieldset>
+            <div class="form-group mt-4">
+                <button class="btn btn-danger" type="submit">Yes, Delete</button>
+                
+                <!-- === THIS IS THE FIX FOR THE DELETE PAGE === -->
+                <a class="btn btn-secondary" href="{% url 'surveys:survey-detail' pk=object.pk %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

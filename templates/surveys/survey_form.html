@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %} <!-- Or remove if not using crispy-forms -->
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <!-- The view's `object` context contains the survey being updated -->
+                    <h2>Edit Survey: {{ object.title }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <fieldset class="form-group">
+                            <!-- Django's UpdateView passes the form in a variable called 'form' -->
+                            <!-- If not using crispy, use: {{ form.as_p }} -->
+                            {{ form|crispy }}
+                        </fieldset>
+                        <div class="form-group mt-4">
+                            <button class="btn btn-primary" type="submit">Update Survey Settings</button>
+                            <a class="btn btn-secondary" href="{% url 'surveys:survey-detail' pk=object.pk %}">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

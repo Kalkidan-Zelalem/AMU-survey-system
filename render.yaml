@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: amu survey # Choose a unique name for your web service
+    env: python
+    buildCommand: "./build.sh" # We'll create this script next
+    startCommand: "gunicorn your_project_name.wsgi:application --log-file -"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amu survey # Name of your PostgreSQL database service below
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true # Render will generate a strong secret key for you
+      - key: WEB_CONCURRENCY
+        value: 4 # Adjust based on your plan and needs
+      - key: DJANGO_SETTINGS_MODULE
+        value: amusurvey.settings # Make sure this points to your settings file
+  - type: pserv
+    name: amu survey # Choose a unique name for your database service
+    env: postgres
+    plan: starter # Or 'free' for testing
+    ipAllowList: [] # You can restrict access if needed
+    disk:
+      name: amu survey-disk
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 1

@@ -1,0 +1,12 @@
+<!-- templates/surveys/survey_thank_you.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="alert alert-success text-center">
+        <h4 class="alert-heading">Thank You!</h4>
+        <p>Your response has been successfully submitted.</p>
+        <hr>
+        <!-- THIS LINK IS NOW CORRECTED -->
+        <a href="{% url 'surveys:survey-list' %}" class="btn btn-primary">Return to Dashboard</a>
+    </div>
+{% endblock %}

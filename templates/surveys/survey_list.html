@@ -1,0 +1,43 @@
+<!-- templates/surveys/survey_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Survey Dashboard</h1>
+    {% if is_creator %}
+      <!-- THIS LINK IS NOW CORRECTED -->
+      <a href="{% url 'surveys:survey-create' %}" class="btn btn-primary">Create New Survey</a>
+    {% endif %}
+  </div>
+
+  {% if surveys %}
+    <div class="list-group">
+      {% for survey in surveys %}
+        <div class="list-group-item list-group-item-action flex-column align-items-start">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ survey.title }}</h5>
+            <small class="text-muted">Created: {{ survey.created_at|date:"M d, Y" }}</small>
+          </div>
+          <p class="mb-1">{{ survey.description|truncatewords:25 }}</p>
+          <div class="mt-2">
+            {% if is_creator %}
+              <!-- THIS LINK IS NOW CORRECTED (with explicit pk) -->
+              <a href="{% url 'surveys:survey-detail' pk=survey.pk %}" class="btn btn-sm btn-outline-primary">Manage Survey</a>
+            {% else %}
+              <!-- THIS LINK IS NOW CORRECTED (with explicit pk) -->
+              <a href="{% url 'surveys:survey-take' pk=survey.pk %}" class="btn btn-sm btn-success">Take Survey</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+        {% if is_creator %}
+            You have not created any surveys yet. Click the "Create New Survey" button to start.
+        {% else %}
+            There are no available surveys for you at this time.
+        {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
