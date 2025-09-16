@@ -1,26 +1,51 @@
+# render.yaml
+
+# 1. Define your managed PostgreSQL database
+databases:
+  - name: amusurvey-db # A unique name for Render's internal reference
+    databaseName: amusurvey_db_prod # The actual database name created within PostgreSQL
+    user: amusurvey_user # The username for connecting to the database
+    plan: free # or 'starter', 'standard', etc. Choose your plan.
+
+# 2. Define your Django web service
 services:
-  - type: web
-    name: amu survey # Choose a unique name for your web service
+  - type: web # This tells Render it's a web application
+    name: amu-survey-web # Choose a unique name for your web service (e.g., lowercase, hyphens)
+    env: python # Specify the Python runtime
+    buildCommand: "./build.sh" # Assumes you have a build.sh for installing dependencies
+    startCommand: "gunicorn amusurvey.wsgi:application --log-file -" # Use your actual project name for wsgi
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase: # This automatically injects the connection string to your managed DB
+          name: amusurvey-db # References the 'name' of your database defined above
+          property: connectionString
+      - key: SECRET_KEY # Crucial for Django security; Render generates a strong one
+        generateValue: true
+      - key: WEB_CONCURRENCY # Recommended for Gunicorn
+        value: 4 # Adjust based on your Render plan (e.g., 2 for Free, 4 for Starter)
+      - key: DJANGO_SETTINGS_MODULE # Tells Django where to find your settings
+        value: amusurvey.settings # Make sure this points to your project's settings file
+      - key: DEBUG # Set to False for production environments
+        value: "False"
+      - key: ALLOWED_HOSTS # Very important for Django in production. Replace with your Render service URL.
+        value: "amu-survey-web.onrender.com" # You'll find this URL on Render dashboard after first deploy
+    numInstances: 1 # Number of web service instances
+    plan: starter # Or 'free' for testing/small projects
+    healthCheckPath: /health # Optional: Add a health check URL in your Django app
+
+# 3. Define a migration job (Highly Recommended for Django)
+  - type: job # This runs once on each deployment to apply migrations
+    name: migrate-amu-survey-db # A unique name for your migration job
     env: python
-    buildCommand: "./build.sh" # We'll create this script next
-    startCommand: "gunicorn your_project_name.wsgi:application --log-file -"
+    buildCommand: "./build.sh" # Reuse your build script
+    startCommand: "python manage.py migrate" # The command to run migrations
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: amu survey # Name of your PostgreSQL database service below
+          name: amusurvey-db # References the same database
           property: connectionString
-      - key: SECRET_KEY
-        generateValue: true # Render will generate a strong secret key for you
-      - key: WEB_CONCURRENCY
-        value: 4 # Adjust based on your plan and needs
-      - key: DJANGO_SETTINGS_MODULE
-        value: amusurvey.settings # Make sure this points to your settings file
-  - type: pserv
-    name: amu survey # Choose a unique name for your database service
-    env: postgres
-    plan: starter # Or 'free' for testing
-    ipAllowList: [] # You can restrict access if needed
-    disk:
-      name: amu survey-disk
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 1
+      - key: SECRET_KEY # Still needed for manage.py commands
+        generateValue: true
+      - key: DEBUG # Set to False for production
+        value: "False"
+    autoDeploy: true # Render will automatically run this job on every new deployment

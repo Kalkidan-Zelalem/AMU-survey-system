@@ -11,12 +11,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-df(-&)3-^#&%*_wo(o%&&c5#@w%f*!-ro--&jz5488$i1gl-@='
+SECRET_KEY = os.environ.get('django-insecure-df(-&)3-^#&%*_wo(o%&&c5#@w%f*!-ro--&jz5488$i1gl-@=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+if not DEBUG:
+    # Render automatically sets RENDER_EXTERNAL_HOSTNAME
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    
+    ALLOWED_HOSTS.append('amu-survey-web.onrender.com') 
+    # ALLOWED_HOSTS.append('your-custom-domain.com')
+
 
 
 # Application definition
