@@ -34,6 +34,8 @@ services:
     healthCheckPath: /health # Optional: Add a health check URL in your Django app
 
 # 3. Define a migration job (Highly Recommended for Django)
+# IMPORTANT: This 'job' needs to be at the same top-level indentation as 'databases' and 'services'
+jobs: # Changed from 'services' to 'jobs' at this level
   - type: job # This runs once on each deployment to apply migrations
     name: migrate-amu-survey-db # A unique name for your migration job
     env: python
@@ -49,3 +51,4 @@ services:
       - key: DEBUG # Set to False for production
         value: "False"
     autoDeploy: true # Render will automatically run this job on every new deployment
+    # Note: Jobs run and then terminate. They don't stay running like web services.
