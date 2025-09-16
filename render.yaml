@@ -1,4 +1,4 @@
-sservices:
+services:
   - name: amu-survey-web
     type: web
     env: python
@@ -36,4 +36,4 @@ sservices:
         generateValue: true
       - key: DEBUG
         value: "False"
-    autoDeploy: true    autoDeploy: true
+    autoDeploy: true
