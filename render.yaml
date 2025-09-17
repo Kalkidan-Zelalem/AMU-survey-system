@@ -1,26 +1,32 @@
+# render.yaml
 services:
   - name: amu-survey-web
     type: web
     env: python
-    buildCommand: "./build.sh"
-    # Run migrations as part of the start command, then start Gunicorn
+    # Combined build command: install requirements and collect static files
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input"
+    # Run migrations then start Gunicorn
     startCommand: "python manage.py migrate && gunicorn amusurvey.wsgi:application --log-file -"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: amusurvey-db # This name will refer to the database created on Render
+          name: amusurvey-db # This name refers to the database defined below
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: WEB_CONCURRENCY
-        value: 4
+        value: 1 # Recommended for free/starter plan (512MB RAM)
       - key: DJANGO_SETTINGS_MODULE
         value: amusurvey.settings
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
-        value: "amu-survey-web.onrender.com"
+        value: "amu-survey-web.onrender.com" # Or use value: "*.onrender.com" for more flexibility
     numInstances: 1
-    plan: starter
+    plan: starter # This is the free tier for web services
     healthCheckPath: /health
-# The 'migrate-amu-survey-db' service of type 'job' is removed as it's not a recognized Render service type.
+
+  - type: postgres # Define your PostgreSQL database service
+    name: amusurvey-db
+    plan: free # Absolutely critical for the free database tier
+    # Optional: You can specify a database version if needed, e.g., version: "14"
