@@ -29,4 +29,28 @@ services:
   - type: postgres # Define your PostgreSQL database service
     name: amusurvey-db
     plan: free # Absolutely critical for the free database tier
-    # Optional: You can specify a database version if needed, e.g., version: "14"
+    # Optional: You can specify a database version if needed, e.g., version: "14"# render.yaml - UPDATED VERSION
+services:
+  - name: amu-survey-web
+    type: web
+    env: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input"
+    startCommand: "python manage.py migrate && gunicorn amusurvey.wsgi:application --log-file -"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amusurvey-db # This will now refer to the database you manually created in Step 1
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 1
+      - key: DJANGO_SETTINGS_MODULE
+        value: amusurvey.settings
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "amu-survey-web.onrender.com" # Or use value: "*.onrender.com" for more flexibility
+    numInstances: 1
+    plan: starter
+    healthCheckPath: /health
