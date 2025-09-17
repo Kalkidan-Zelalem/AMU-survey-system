@@ -30,7 +30,6 @@ services:
     name: amusurvey-db
     plan: free # Absolutely critical for the free database tier
     # Optional: You can specify a database version if needed, e.g., version: "14"# render.yaml - UPDATED VERSION
-services:
   - name: amu-survey-web
     type: web
     env: python
